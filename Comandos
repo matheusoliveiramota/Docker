@@ -1,0 +1,208 @@
+docker version - exibe a versão do docker
+
+docker run NOME_DA_IMAGEM - Cria um container com a respectiva imagem passada como parâmetro.
+	Ele busca o nome da imagem localmente e depois busca no Docker Hub
+
+docker ps
+	Lista todos containers ATIVOS
+	
+docker ps -a
+	Lista TODOS containers
+	
+docker run ubuntu echo $"Olá Mundo"
+	Cria um novo container com a imagem do Ubuntu e executa o "Olá Mundo"
+	Porém, toda vez que é executado, um novo container é criado
+
+docker run -it ubuntu
+	Cria um novo container com a imagem do Ubuntu e ABRE o terminal do Ubuntu
+	Fazendo isso você está dentro do Ubuntu do seu container
+		Criando um txt dentro do container com Ubuntu:
+			root@0e49ea124562:/# touch ola-mundo.txt
+			root@0e49ea124562:/# ls
+				bin  boot  dev  etc  home  lib  lib32  lib64  libx32  media  mnt  ola-mundo.txt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+			root@0e49ea124562:/# echo "Teste container" > ola-mundo.txt
+			root@0e49ea124562:/# cat ola-mundo.txt
+			Teste container
+
+docker start 0e49ea124562
+	Inicia o container, ele passa a estar ATIVO, porém o terminal é aberto
+
+docker stop 0e49ea124562
+	Inicia o container, ele passa a estar ATIVO, porém o terminal é aberto
+	
+docker start -a -i 0e49ea124562
+	Inicia o container e -a(abre o terminal) -i(permite a interação por meio do teclado)
+
+docker rm bc06d3df3d84
+	Delete o container
+
+docker container prune
+	Deleta TODOS containers INATIVOS
+
+docker images
+	Lista as imagens baixadas
+	
+docker rmi hello-world
+	Remove a imagem
+	
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Criando container para segurar um site estático
+
+docker run dockersamples/static-site
+	Neste exemplo, como não é uma imagem oficial, é necessário especificar o username no nome da imagem "dockersamples"
+	Nesta imagem o container está executando um processo de um Servidor Web, disponibilizando um site estático, porém:
+		O cmd fica travado executando o site
+		A porta no container é 80, porém em nenhum momento linkamos a porta do Container com a porta do computador físico
+		
+docker run -d -P dockersamples/static-site
+	-d: Executa em background
+	-P: Linka a porta interna do container com a porta do computador, atribuindo uma porta dinamicamente
+
+	OBS: Se estiver utilizando o Docker Toolbox, executar docker-machine ip para saber onde o site esá rodando
+	
+docker port ID_CONTAINER
+	Retorna a porta que o site está rodando
+
+docker run -d -P --name meu-site dockersamples/static-site
+	Atribuindo um nome para o site
+
+docker stop meu-site
+	Parando atravpes do nome do site
+	
+docker run -d -p 12345:80 dockersamples/static-site
+	Definindo a porta física a ser atrelada ao container
+	
+docker run -d -P -e AUTHOR="Douglas Q" 	
+	Atribuindo uma Variável de Ambiente ao executar o site
+
+docker stop -t 0 $(docker ps -q)
+	docker ps -q: Retorna os id's
+	Para todos sites que estão rodando, sem esperar os 10 seg padrão
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Usando Volumes
+
+docker run -v "/var/www" ubuntu
+	Cria um volume no container na pasta "/var/www"
+
+docker inspect ID_CONTAINER
+	Em Mounts descobrimos onde será escrito na nossa máquina localmente
+	
+docker run -it -v "C:\Users\Alura\Desktop:/var/www" ubuntu
+	Especificando o local onde será escrito na máquina local
+	
+docker run -d -p 8080:3000 -v "C:\Users\Alura\Desktop\volume-exemplo:/var/www" -w "/var/www" node npm start
+	Porta 8080 local, aponta para porta 3000 do container
+	Volume criado no código local
+	-w "/var/www": Local onde o comando "node npm start" deve ser executado
+	
+docker run -d -p 8080:3000 -v "$(pwd):/var/www" -w "/var/www" node npm start
+		Melhorando o comando
+		pwd: pasta atual, onde o cmd está (ou seja, deve estar na pasta onde o código deve ser executado)
+		
+-----------------------------------------------------------------------------------------------------------------------------------
+Imagens
+
+docker build -f Dockerfile -t matheusmota/node .
+	build: contrução da imagem
+	-f Dockerfile: nome do arquivo dockerfile
+	-t matheusmora/node: nome da imagem a ser criada
+	.: contexto = no exemplo é a própria pasta local que é onde está o arquivo dockerfile
+
+docker run -d -p 8080:3000 matheusmota/node
+	Executar a imagem criada
+	
+docker login
+	inicia o processo de login no Docker Hub.
+
+docker push NOME_USUARIO/NOME_IMAGEM 
+	envia a imagem criada para o Docker Hub.
+
+docker pull NOME_USUARIO/NOME_IMAGEM 
+	baixa a imagem desejada do Docker Hub.
+	
+-----------------------------------------------------------------------------------------------------------------------------------
+Rede no Docker
+
+docker run -it ubuntu
+	Criar container com imagem Ubuntu e abre o terminal interativo
+
+root@dd9581464de7:/# apt-get update && apt-get install -y iputils-ping
+	Como o ping não é um pacote básico e não veio na imagem do Ubuntu, por isso é necessário baixar essa extensão
+
+root@dd9581464de7:/# hostname -i
+	Exibe o IP criado pelo docker ao container
+
+root@dd9581464de7:/# ping 172.17.0.3
+	Pingar o outro container criado na rede
+	
+docker network create --driver bridge minha-rede
+	Criar a própria rede
+	Driver mais comum é o bridge: pra fazer a comunicação entre os containers acontecerem
+
+docker network ls
+	Lista as redes
+	
+docker run -it --name meu-container-de-ubuntu --network minha-rede ubuntu
+	Cria o container atrelado à rede que foi criada
+
+docker inspect meu-container-de-ubuntu
+	Em network exibe a rede relacionada
+
+root@dd9581464de7:/# ping meu-container-de-ubuntu
+	Agora, estando na rede criada, é possível se comunicar através do nome
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Acessando uma Base de Dados
+
+docker pull douglasq/alura-books:cap05
+	Baixar imagem do fonte que acessa o mongo
+	
+docker pull mongo
+	Baixar imagem do Mongo
+	
+docker run -d --network minha-rede -p 8080:3000 douglasq/alura-books:cap05
+	Executar projeto na porta 8080 local
+
+docker run -d --name meu-mongo --network minha-rede mongo
+	Executar DB
+
+http://localhost:8080/seed
+	Simula inserção dos livros na app
+
+http://localhost:8080
+	Mostra os livros que estão na base
+	
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Docker Compose
+
+$ cd Desktop/alura-docker-cap06/
+~/Desktop/alura-docker-cap06$ sudo docker-compose build
+	Buildar todas as imagens necessárias
+
+docker-compose up
+	Irá seguir o que está descrito no .yml
+	Cria a rede, o container do MongoDB, os três containers da aplicação e o container do NGINX
+
+Configuramos a porta 80 para acessar o NGINX, então vamos acessar no navegador a página http://localhost:1234/
+
+docker-compose up -d
+	Executar em background
+
+docker-compose ps
+	Serviços em execução
+
+docker-compose down
+	Parar os serviços
+	
+docker exec -it alura-books-1 ping alura-books-2
+	Testar a comunicação entre eles pelo nome do container
+
+docker exec -it alura-books-1 ping node2
+	Testar a comunicação entre eles pelo nome do serviço
+
+docker-compose --help
+	Todos comandos
