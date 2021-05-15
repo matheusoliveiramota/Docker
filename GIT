@@ -1,0 +1,84 @@
+GITHUB
+
+1 - LOG
+	Várias formas de exibir/filtrar os Logs https://devhints.io/git-log
+	git log -p: Mostra as modificações
+	git log --oneline: Traz de forma resumida
+	
+2 - PULL E PUSH
+	- PULL: Busca/Atualiza os arquivos locais com o que está no remoto
+	- PUSH: Envia os dados do local para o remoto
+
+3 - BRANCHES
+	- Estando em uma branch (geralmente master), basta digitar git branch nomebranch, que irá criar uma nova branch
+	- git checkout nomebranch (para mudar de branch)
+	* git checkout -b nomebranch (faz os 2 passos anteriores, cria a branch e muda para ela ("aponta o HEAD para ela")
+	
+	- git branch: Ver as branches mapeadas, e a sinalizada mostra a branch atual
+
+4 - MERGE
+	- Estando na branch master baste digitar git merge nomebranch
+	- VIM: Após alterar a mensagem, Para salvar : + x + "Enter"
+
+5 - REBASE
+
+	https://git-school.github.io/visualizing-git/
+	
+	- git rebase master
+	- Vai se basear na nova versão que está na branch especificada.
+	- Ex: Trabalhando na branch fiz 2 commits; Porém teve 1 ou MAIS correções na master;
+		- Através do git rebase, 2 novos commmits são criados após as correções da master, contemplando as alterações
+
+6 - REBASE VS MERGE
+	- O merge junta os trabalhos e gera um merge commit. O rebase aplica os commits de outra branch na branch atual.
+
+7 - RESOLVENDO CONFLITOS
+	- Ao executar git merge nomebranch , uma mensagem pode ser exibida avisando que houve conflitos
+	- Ao abrir o arquivo no VS CODE, basta corrigir as linhas de acordo com as alterações exibidas
+	- Após a correção deve executar um git add nome_arquivo
+	- Depois de adicionar o arquivo corrigido, basta comitar
+	
+8 - CTRL + Z NO GITHUB
+	- Para voltar a versão do arquivo (antes de adicionar), basta digitar git chekout -- nomearquivo.html
+	- Após adicionar o arquivo (git add) para voltar a versão anterior, deve ser executado o comando git reset HEAD index.html
+	- Após fazer um commit, deve ser executado o git revert HashDoCommit
+		- Isso vai gerar um novo commit de acordo com a versão especificada
+
+9 - GUARDANDO PARA MAIS TARDE
+	- Salvando as alterações: git stash
+	- Listando as alterações salvas: git stash list
+	- Aplica as alterações salvas: git stash apply "number"
+	- Apagar o que foi salvo: git stash drop
+	- Aplica as alterações e apaga o que foi salvo: git stash pop
+		 - Ao executar este comando é realizado um merge com a versão atual da master e as alterações salvas
+
+10 - VIAJANDO NO TEMPO
+	- Para baixar o código em uma versão específica basta usar o seguinte comando: git checkout HashCommit
+		 - OBS: Fazendo isso, você fica sem nenhuma associação com a HEAD, fica desassociado à linha de desenvolvimento. Não é possível fazer alterações e commitá-las.
+	- Caso seja necessário fazer as alterações na versão específica, deve ser criada uma branch após fazer o checkout
+
+11 - VENDO AS ALTERAÇÕES
+	- git diff: para ver as alterações locais antes de adicioná-las
+	- git diff HashCommitDe..HashCommitPara
+
+12 - TAGS E RELEASES
+	 - TAG: Definir um marco para a aplicação (v0.1 por exemplo)
+		- Qualquer alteração a ser realizada será em uma nova TAG (v0.2 por exemplo)
+		- OBS: Não signifca que o código não pode ser alterado, apenas garante um ESTADO para aquele código	
+		- Criar uma TAG: git tag -a v0.1.0 -m "Lançando a primeira versão (BETA) da aplicação"
+		- Listar as tags: git tag
+		- Desta forma, ele vai gerar uma Release do seu código. Ou seja, conseguimos baixar um zip com a versão da Release
+
+13 - REMOTOS
+	- Listando repositórios remotos: git remote -v
+
+14 - TREINAMENTO GITHUB	
+
+	RENOMEAR MENSAGEM DO COMMIT
+		git commit --amend
+
+	ADICIONAR MUDANÇAS E COMMITAR (OBS: NÃO ADICIONA ARQUIVOS NOVOS, É VÁLIDO SOMENTE PARA ARQUIVOS JÁ TRACEADOS)
+		git commit -a -m "Mensagem"
+
+15 - CLONAR REPOSITÓRIO ESPECÍFICO
+	git clone --branch develop https://github.com/RdcViagens/RDC.Financeiro.git
